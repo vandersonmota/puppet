@@ -100,5 +100,11 @@ describe processor do
       end
     end
 
+    it "should log connection refused errors" do
+      http.expects(:post).raises(Errno::ECONNREFUSED)
+      Puppet.expects(:err)
+      subject.process
+    end
+
   end
 end

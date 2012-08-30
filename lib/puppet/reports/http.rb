@@ -16,9 +16,13 @@ Puppet::Reports.register_report(:http) do
     headers = { "Content-Type" => "application/x-yaml" }
     use_ssl = url.scheme == 'https'
     conn = Puppet::Network::HttpPool.http_instance(url.host, url.port, use_ssl)
-    response = conn.post(url.path, body, headers)
-    unless response.kind_of?(Net::HTTPSuccess)
-      Puppet.err "Unable to submit report to #{Puppet[:reporturl].to_s} [#{response.code}] #{response.msg}"
+    begin
+      response = conn.post(url.path, body, headers)
+      unless response.kind_of?(Net::HTTPSuccess)
+        Puppet.err "Unable to submit report to #{Puppet[:reporturl].to_s} [#{response.code}] #{response.msg}"
+      end
+    rescue Errno::ECONNREFUSED => e
+      Puppet.err "Unable to submit report to #{Puppet[:reporturl].to_s} Connection refused."
     end
   end
 end
